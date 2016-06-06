@@ -5,4 +5,4 @@ our main board has interface of BlueTooth( version 2.0), so users can control it
 users can also get the APP source code in our github.
 enjoy yourself!
 
-our wedsite :http://ANTBOT.icoc.in
+our website :http://ANTBOT.icoc.in
