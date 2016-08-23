@@ -1,7 +1,6 @@
 #include <ABTKITS.h>
 #include "SoftwareSerial.h"
 
-
 ABTKITS abtKits;
 int cnt=0;
 void setup() {
