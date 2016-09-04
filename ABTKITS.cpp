@@ -37,10 +37,7 @@ void ABTKITS::ABTINIT()
   
   frameCnt=0;
   rbytes = 0;
-  speedL= speedR=80;
-  carType = 0;
-  Adjust_R=0;
-  Adjust_L=0;
+  speedL= speedR=80; 
 }
 int ABTKITS::ABTGetBleCmd()
 {
@@ -178,7 +175,7 @@ void ABTKITS::ABTExpCmd(char *p)
 #ifdef ABT_32U4
         Serial.println(cmd);delay(10);
 #else
-				//softSerial.println(cmd);delay(10);
+				//softSerial.println(cmd);delay(10);//如果控制小车使用了10号管脚，就不要再使用该语句
 #endif
 }
 void ABTKITS::ABTSimple()//串口透传测试，需连接电脑并打开串口监视器或串口助手
@@ -211,5 +208,7 @@ void ABTKITS::ABTPrint()
 
 void ABTKITS::ABTSensorFunc(char cRW,int sID,int sVal)//传感器模块处理函数
 {
-	
+	curInfo.cRW = cRW;
+	curInfo.sID = sID;
+	curInfo.sVal= sVal;
 }
