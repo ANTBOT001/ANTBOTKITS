@@ -12,7 +12,7 @@
 #define K4_PIN   5
 
 ABTKITS abtKits;
-extern SoftwareSerial softSerial;
+extern SoftwareSerial softSerial;//头文件出的软串口初始化波特率应改为2400
 int cnt=0;
 int spkType=0;//报警类型
 void setup() {
