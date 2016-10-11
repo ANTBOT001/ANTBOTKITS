@@ -1,0 +1,52 @@
+自定义协议部分：
+帧头	命令类型	            命令编号	    Android端	    Arduino端
+ABT,	AR:读取模拟IO量	     管脚号	      --	           模拟量读数
+      AW:输出PWM	          管脚号	        PWM值	       --
+      DR:读取数字IO量	     管脚号	      --	           数字量读数
+      DW:输出数字IO量	     管脚号	        数字量值	    --
+      SR: 读入型传感器模块	传感器编号	    --	           传感器值
+      SW: 控制型传感器模块	传感器编号	      控制值	       --
+				
+帧的结尾以’ #’结束
+
+四轮小车控制：
+停止：ABTSW00,0# 
+前进：ABTSW00,1#
+后退：ABTSW00,2#
+左转：ABTSW00,3#
+右转：ABTSW00,4#
+四足小车控制：
+停止：ABTSW01,0# 
+前进：ABTSW01,1#
+后退：ABTSW01,2#
+左转：ABTSW01,3#
+右转：ABTSW01,4#
+履带小车控制：
+停止：ABTSW02,0# 
+前进：ABTSW02,1#
+后退：ABTSW02,2#
+左转：ABTSW02,3#
+右转：ABTSW02,4#
+左轮增量：
+ABTSW05,VAL#（VAL:0-100）
+右轮增量：
+ABTSW06,VAL#（VAL:0-100）
+新增传感器：
+1温湿度 单位:℃ ug/m³
+温度：ABTSR00,0#   应答：ABTSR00,data#
+湿度：ABTSR01,1#   应答：ABTSR01,data#
+2 PM2.5  单位:cm
+ABTSR02,0#         应答：ABTSR02,data#
+3 超声波 单位:cm
+ABTSR03,0#         应答：ABTSR03,data#
+4 自定义1
+ABTSR98,0#         应答：ABTSR98,data#
+5自定义2
+ABTSR99,0#         应答：ABTSR99,data#
+串口MP3模块：
+播放：ABTSW03,0#
+停止：ABTSW03,1#
+上一曲：ABTSW03,2#
+下一曲：ABTSW03,3#
+音量+：ABTSW03,4#
+音量-：ABTSW03,5#
