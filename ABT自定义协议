@@ -46,7 +46,7 @@ ABTSR99,0#         应答：ABTSR99,data#
 串口MP3模块：
 播放：ABTSW03,0#
 停止：ABTSW03,1#
-上一曲：ABTSW03,2#
-下一曲：ABTSW03,3#
+下一曲：ABTSW03,2#
+上一曲：ABTSW03,3#
 音量+：ABTSW03,4#
 音量-：ABTSW03,5#
