@@ -1,14 +1,21 @@
 #include <ABTKITS.h>
 
 #include "SoftwareSerial.h"
+#define DRV_9110//如果使用L298P的驱动板，就注释掉该语句
 
-#define E1  5  //PWMA
- 
-#define M1  6  //DIRA
- 
-#define E2  3  //PWMB             
- 
+#ifdef DRV_9110
+#define E1  5  //PWMA 
+#define M1  6  //DIRA 
+#define E2  3  //PWMB
 #define M2  10  //DIRB
+#define BUZZERPIN 7//蜂鸣器
+#define LEDPIN    4//LED(L9110S板)
+#else
+#define E1  5  //PWMA 
+#define M1  4  //DIRA 
+#define E2  6  //PWMB
+#define M2  7  //DIRB
+#endif
 #define NOTE_CS5 554 //3
 #define NOTE_D5  587 //4
 #define NOTE_E5  659 //5
@@ -19,13 +26,14 @@ void setup() {
   // put your setup code here, to run once:
 abtKits.ABTINIT();
 delay(200);
-pinMode(4,OUTPUT);//LED ctrl
-pinMode(7,OUTPUT);//Buzzer ctrl
-pinMode(3,OUTPUT);
-pinMode(5,OUTPUT);
-pinMode(6,OUTPUT);
-pinMode(10,OUTPUT);
- 
+pinMode(E1,OUTPUT);//LED ctrl
+pinMode(E2,OUTPUT);//Buzzer ctrl
+pinMode(M1,OUTPUT);
+pinMode(M2,OUTPUT);
+#ifdef DRV_9110
+pinMode(BUZZERPIN,OUTPUT);
+pinMode(LEDPIN,OUTPUT);
+#endif
 ABTMotorstop();
 }
 
@@ -42,7 +50,9 @@ void loop() {
     if(abtKits.curInfo.cRW=='W')
     {
       abtKits.curInfo.cRW = 'N';//避免下一次重复进入
+      #ifdef DRV_9110
       digitalWrite(4,0);//熄灭LED
+      #endif
       if(abtKits.curInfo.sID<5)
       {
         carType = abtKits.curInfo.sID;
@@ -65,10 +75,10 @@ void loop() {
       
       }else if(abtKits.curInfo.sID==5)
       {
-        abtKits.speedL = 80+abtKits.curInfo.sVal;
+        abtKits.speedL = 120+abtKits.curInfo.sVal;
         }else if(abtKits.curInfo.sID==6)
       {
-        abtKits.speedR = 80+abtKits.curInfo.sVal;
+        abtKits.speedR = 120+abtKits.curInfo.sVal;
         }
    }
   }
@@ -81,26 +91,46 @@ void ABTMotorstop()//停止
   digitalWrite(E2,0);
   digitalWrite(M1,0);
   digitalWrite(M2,0);
+#ifdef DRV_9110
   digitalWrite(4,1);//点亮LED
   StopSound();
+#endif
  }
 void LeftCtrl(int dir,int spdPwm)//左轮控制
 {
+#ifdef DRV_9110
   if(dir)//正转
-  {
-    digitalWrite(M1,LOW); analogWrite(E1, spdPwm);   //PWM调速
+  {   
+    digitalWrite(M1,LOW); analogWrite(E1, spdPwm);   //PWM调速    
     }else{
-      digitalWrite(E1,LOW); analogWrite(M1, spdPwm);   //PWM调速
+    digitalWrite(E1,LOW); analogWrite(M1, spdPwm);   //PWM调速
       }
+#else
+  if(dir)//正转
+  {   
+    digitalWrite(M1,LOW); analogWrite(E1, spdPwm);   //PWM调速    
+    }else{
+    digitalWrite(M1,HIGH); analogWrite(E1, spdPwm);   //PWM调速
+      }
+#endif
 }
 void RightCtrl(int dir,int spdPwm)//右轮控制
 {
+#ifdef DRV_9110
   if(dir)//正转
   {
     digitalWrite(M2,LOW); analogWrite(E2, spdPwm);   //PWM调速
     }else{
-      digitalWrite(E2,LOW); analogWrite(M2, spdPwm);   //PWM调速
+    digitalWrite(E2,LOW); analogWrite(M2, spdPwm);   //PWM调速
       }
+#else
+  if(dir)//正转
+  {
+    digitalWrite(M2,HIGH); analogWrite(E2, spdPwm);   //PWM调速
+    }else{
+    digitalWrite(M2,LOW); analogWrite(E2, spdPwm);   //PWM调速
+      }
+#endif
 }
 void ABTMotorfrwd()//前进
 {
