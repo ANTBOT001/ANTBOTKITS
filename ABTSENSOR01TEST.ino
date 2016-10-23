@@ -1,7 +1,11 @@
 #include <ABTKITS.h>
 
 #include "SoftwareSerial.h"
+#include <dht11.h>
 
+dht11 DHT11;
+
+#define DHT11PIN 6
 #define NOTE_CS5 554 //3
 #define NOTE_D5  587 //4
 #define NOTE_E5  659 //5
@@ -12,9 +16,11 @@
 #define K4_PIN   5
 
 ABTKITS abtKits;
-extern SoftwareSerial softSerial;//头文件出的软串口初始化波特率应改为2400
+SoftwareSerial softSerial(8, 10);//RXD,TXD 初始化波特率应改为2400
 int cnt=0;
 int spkType=0;//报警类型
+char sendcmd[64];
+int oldPm = 0;
 void setup() {
   // put your setup code here, to run once:
 abtKits.ABTINIT();
@@ -24,29 +30,29 @@ pinMode(K2_PIN,INPUT);//K2
 pinMode(K3_PIN,INPUT);//K3
 pinMode(K4_PIN,INPUT);//K4
 pinMode(7,OUTPUT);//Buzzer ctrl
-//softSerial.begin(2400);//更改软串口波特率，用于接收PM2.5数据
-delay(500);
+softSerial.begin(2400);//更改软串口波特率，用于接收PM2.5数据
+delay(200);
 
 }
 
 void loop() {
   // put your main code here, to run repeatedly:
-  //abtKits.ABTSimple();return;
-  //int i=0;
-  //i = abtKits.ABTGetBleCmd();
-  //delay(20);
-  char sendcmd[64];
+  
+  
   int pmData = GetPM25Data();
+  delay(1000);
   if(pmData>0)
   {
-    if(pmData>50)
-    WarnSound(spkType);//PM2.5报警设置
-    sprintf(sendcmd,"ABTSR02,%d#",pmData);//PM2.5
-    abtKits.ABTSendCMD(sendcmd);delay(100);
-    sprintf(sendcmd,"ABTSR00,%d#",cnt++);//温度
-    abtKits.ABTSendCMD(sendcmd);delay(100);
-    sprintf(sendcmd,"ABTSR01,%d#",cnt+30);//湿度
-    abtKits.ABTSendCMD(sendcmd);delay(100);
+    if((pmData-oldPm)<200)//防止误读数数据
+    {
+      oldPm = pmData;
+      sprintf(sendcmd,"ABTSR02,%d#",pmData);//PM2.5
+      abtKits.ABTSendCMD(sendcmd);delay(100);
+      }
+    //if(pmData>50)
+    //WarnSound(spkType);//PM2.5报警设置
+    
+    
     }
     if(digitalRead(K1_PIN)==0)
     {
@@ -68,7 +74,16 @@ void loop() {
       spkType = 4;
       WarnSound(spkType);//设置报警音
       }
-    delay(500);
+      int chk = DHT11.read(DHT11PIN);
+      delay(1000);
+  if(chk==DHTLIB_OK)
+  {
+    sprintf(sendcmd,"ABTSR00,%d#",DHT11.temperature);//温度
+    abtKits.ABTSendCMD(sendcmd);delay(100);
+    sprintf(sendcmd,"ABTSR01,%d#",DHT11.humidity);//湿度
+    abtKits.ABTSendCMD(sendcmd);delay(100);
+    }
+    
 }
 
 int GetPM25Data()//读取PM2.5传感器
@@ -77,34 +92,37 @@ int GetPM25Data()//读取PM2.5传感器
   int data=0;
   int revbuf[7];
   int dsize=0;
+  unsigned char headFlag = 0;
   while (softSerial.available()>0){
-   data = softSerial.read();     
+   data = softSerial.read();   
+   
    dsize++;
-   if(dsize>100)//超时退出
-   {
+   if(dsize>200)//超时退出
+   {   
     return -1;
     }
-   if(cnt==0)
-   {
-    if(data==0xAA)//帧头
-    revbuf[0] = data;
-    }
-    if(revbuf[0]==0xAA)
+    if(headFlag)
     {
-      revbuf[cnt++]=data;
+      revbuf[cnt++]=data;         
       }
-   if(cnt==7)//帧计数
-   {
-    cnt=0;
+    if(data==0xAA&&headFlag==0)//找到帧头
+    {
+       revbuf[0] = 0xAA;
+       headFlag=1;
+       cnt = 1;
+      }     
+   if(cnt>6||revbuf[cnt]==0xff)//帧计数
+   {      
     break;
-    }  
-   delay(10);
+       }  
+   delay(5);
   }
-  int sum=revbuf[1]+ revbuf[2]+ revbuf[3] + revbuf[4];
-  if(revbuf[5]==sum && revbuf[6]==0xff )//校验字和结束字
+  
+  //int sum=revbuf[1]+ revbuf[2]+ revbuf[3] + revbuf[4];
+  //if(revbuf[5]==sum )//校验字
   {
     float vo=((revbuf[1]<<8)+revbuf[2])/1024.0*5.00;//计算PM2.5值
-    softSerial.flush();
+    //softSerial.flush();
     revbuf[0]=0;    
     return vo*800;   //返回读数
     
@@ -114,6 +132,7 @@ int GetPM25Data()//读取PM2.5传感器
   }
 void WarnSound(int Type)
 {
+  return;
   int tonePin = 7;
   if(Type>4)
   return;
@@ -146,3 +165,7 @@ for (int thisNote = 0; thisNote < Type; thisNote++) {
   }
   
   }
+  double Fahrenheit(double celsius) 
+{
+        return 1.8 * celsius + 32;
+}    //摄氏温度度转化为华氏温度
