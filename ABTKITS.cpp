@@ -2,6 +2,7 @@
  * ABTKITS.cpp
  * Author: ANTBOT
  * Created: 2016-05-21
+ * Modified: 2016-10-20
  */
 #include <Arduino.h> 
 #include <string.h>
@@ -11,7 +12,7 @@
 
 
 //#define ABT_32U4
-SoftwareSerial softSerial(8, 10);//RXD,TXD 软串口
+//SoftwareSerial softSerial(8, 10);//RXD,TXD 软串口
 
 ABTKITS::ABTKITS(){
 }
@@ -26,11 +27,11 @@ void ABTKITS::ABTINIT()
 	Serial.println("okey,ready");
 #else//328P
 	Serial.begin(57600);	//用于和蓝牙模块通讯
-	softSerial.begin(57600);	//用于和PC串口通讯	
+//	softSerial.begin(57600);	//用于和PC串口通讯	
 	//Serial.begin(9600);	//用于和蓝牙模块通讯
 	//softSerial.begin(9600);	//用于和PC串口通讯	
 	delay(200);
-	softSerial.println("okey,ready");
+//	softSerial.println("okey,ready");
 #endif
 
   sprintf( HEADFRAME,"ABT");
@@ -74,7 +75,7 @@ void ABTKITS::ABTSprint(char *p)
 #ifdef ABT_32U4
 	Serial.println(p);//32u4调试	
 #else//328P
-	softSerial.println(p);	//328p调试
+//	softSerial.println(p);	//328p调试
 #endif
 }
 void ABTKITS::ABTHandleBleCmd()
@@ -188,12 +189,12 @@ void ABTKITS::ABTSimple()//串口透传测试，需连接电脑并打开串口�
         delay(1);Serial1.write(Serial.read());
     }
 #else
-		while(Serial.available()) {    
-        delay(1);softSerial.write(Serial.read());
-    }
-    while(softSerial.available()) {
-        delay(1);Serial.write(softSerial.read());
-    }
+//		while(Serial.available()) {    
+//        delay(1);softSerial.write(Serial.read());
+//    }
+//    while(softSerial.available()) {
+//        delay(1);Serial.write(softSerial.read());
+//    }
 #endif
 }
 void ABTKITS::ABTPrint()
@@ -201,7 +202,7 @@ void ABTKITS::ABTPrint()
 #ifdef ABT_32U4	
 	Serial.println("Hello ABT!");
 #else
-  softSerial.println("Hello ABT!");
+//  softSerial.println("Hello ABT!");
 #endif	
 	}
  
