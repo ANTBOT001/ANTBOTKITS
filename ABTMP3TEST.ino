@@ -8,7 +8,7 @@
 //003.mp3                                /
 //////////////////////////////////////////
 ABTKITS abtKits;
-SoftwareSerial myPort(10, 8); // 软件模拟串口10为RX, 8为TX
+SoftwareSerial myPort(8, 10); // 软件模拟串口8为RX, 10为TX
 int cnt=0;
 ///////////////////////////////
 int freeType=0;
@@ -34,6 +34,10 @@ void setup() {
   pinMode(6,OUTPUT);
   pinMode(7,OUTPUT);
   digitalWrite(7,0);
+  analogWrite(3,100);
+  analogWrite(5,150);
+  analogWrite(6,200);
+  
 }
 
 void loop() {
@@ -44,7 +48,7 @@ void loop() {
 
   if(i>6)//接收字节数大于6执行处理命令函数
   {
-    Serial.println("ok cmd");
+    //Serial.println("ok cmd");
     abtKits.ABTHandleBleCmd();delay(20);
     freeMode=0;
     if(abtKits.curInfo.cRW=='W')
@@ -60,26 +64,26 @@ void loop() {
     cnt++;
     if(cnt==10)
     {
-    	cnt=0;
-    	if(freeMode)
-	   {
-	   		if(freeType==FREETYPE1)
-	   		{
-	   			analogWrite(3,255*sin(fR*3.14/180));
-	   			analogWrite(5,255*sin(fG*3.14/180));
-	   			analogWrite(6,255*sin(fB*3.14/180));	
-	   			fR++;
-	   			fG++;
-	   			fB++;
-	   			if(fR==180)fR=0;
-	   			if(fG==180)fG=0;
-	   			if(fB==180)fB=0;	
-	   		}else{
-	   			analogWrite(3,random(255));
-	   			analogWrite(5,random(255));
-	   			analogWrite(6,random(255));	
-	   		}
-	   }	
+      cnt=0;
+      if(freeMode)
+     {
+        if(freeType==FREETYPE1)
+        {
+          analogWrite(3,255*sin(fR*3.14/180));
+          analogWrite(5,255*sin(fG*3.14/180));
+          analogWrite(6,255*sin(fB*3.14/180));  
+          fR++;
+          fG++;
+          fB++;
+          if(fR==180)fR=0;
+          if(fG==180)fG=0;
+          if(fB==180)fB=0;  
+        }else{
+          analogWrite(3,random(255));
+          analogWrite(5,random(255));
+          analogWrite(6,random(255)); 
+        }
+     }  
     }
    
   
@@ -102,21 +106,21 @@ void setVolum(unsigned char volunm)//0-30
   void mp3Play(unsigned char index)//1:播放 2：暂停 3：下一曲 4：上一曲 5：音量加 6音量减
 {
   unsigned char cmd[6];  
-  if(index<6)
+  if(index<7)
   {
-  		cmd[0]=0x7E;cmd[1]=0x02;cmd[2]=index;cmd[3]=0xEF;     
-  		myPort.write(cmd,4);  delay(50);
-  		//Serial.println(index); 
+      cmd[0]=0x7E;cmd[1]=0x02;cmd[2]=index;cmd[3]=0xEF;     
+      myPort.write(cmd,4);  delay(50);
+      //Serial.println(index); 
   }else if(index==9)
   {
-  		freeType = 1-freeType;	
-  		freeMode = 1;
-  		if(freeType==FREETYPE1)
-  		{
-  			fR = random(180);	
-  			fG = random(180);
-  			fB = random(180);
-  		}
+      freeType = 1-freeType;  
+      freeMode = 1;
+      if(freeType==FREETYPE1)
+      {
+        fR = random(180); 
+        fG = random(180);
+        fB = random(180);
+      }
   }
   
   }  
