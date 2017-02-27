@@ -1,7 +1,7 @@
 #include <ABTKITS.h>
-
+#include <Servo.h>
 #include "SoftwareSerial.h"
-#define DRV_9110//如果使用L298P的驱动板，就注释掉该语句
+#define DRV_9110
 
 #ifdef DRV_9110
 #define E1  5  //PWMA 
@@ -20,12 +20,20 @@
 #define NOTE_D5  587 //4
 #define NOTE_E5  659 //5
 ABTKITS abtKits;
+//Servo mServo01;
+//Servo mServo02;
+int ang01 = 0;
+int ang02 = 100;
 int cnt=0;
 int carType=0;
+int dir01 = 0;
+int dir02 = 0;
 void setup() {
   // put your setup code here, to run once:
 abtKits.ABTINIT();
 delay(200);
+pinMode(2,INPUT);
+pinMode(8,INPUT);
 pinMode(E1,OUTPUT);//LED ctrl
 pinMode(E2,OUTPUT);//Buzzer ctrl
 pinMode(M1,OUTPUT);
@@ -34,7 +42,14 @@ pinMode(M2,OUTPUT);
 pinMode(BUZZERPIN,OUTPUT);
 pinMode(LEDPIN,OUTPUT);
 #endif
+//mServo01.attach(9);
+//mServo02.attach(11);
+delay(10);
+//mServo01.write(ang01);
+//mServo02.write(ang02);
+delay(50);
 ABTMotorstop();
+
 }
 
 void loop() {
@@ -43,7 +58,49 @@ void loop() {
   int i=0;
   i = abtKits.ABTGetBleCmd();
   delay(20);
-
+  if(digitalRead(2)==0)
+  {
+    if(dir01==0)
+    {
+      ang01+=5;
+      if(ang01>=100)
+      {
+        ang01=100;
+        dir01=1;
+        }
+      }else{
+        ang01-=5;
+      if(ang01<=0)
+      {
+        ang01=0;
+        dir01=0;
+        }
+        //mServo01.write(ang01);
+        }
+    
+    }
+    if(digitalRead(8)==0)
+  {
+    if(dir02==0)
+    {
+      ang02-=5;
+      if(ang02<=0)
+      {
+        ang02=0;
+        dir02=1;
+        }
+      }else{
+        ang02+=5;
+      if(ang02>=100)
+      {
+        ang02=100;
+        dir02=0;
+        }
+        //mServo02.write(ang02);
+        }
+    
+    }
+    delay(20);
   if(i>6)//接收字节数大于6执行处理命令函数
   {
     abtKits.ABTHandleBleCmd();delay(20);
@@ -79,6 +136,22 @@ void loop() {
         }else if(abtKits.curInfo.sID==6)
       {
         abtKits.speedR = 120+abtKits.curInfo.sVal;
+        }else if(abtKits.curInfo.sID==7)
+      {
+        ang01 = abtKits.curInfo.sVal;
+        if(ang01<0)
+        ang01=0;
+        if(ang01>100)
+        ang01=100;
+        //mServo01.write(ang01);
+        }else if(abtKits.curInfo.sID==8)
+      {
+        ang02 = 100-abtKits.curInfo.sVal;
+        if(ang02<0)
+        ang02=0;
+        if(ang02>100)
+        ang02=100;        
+        //mServo02.write(ang02);
         }
    }
   }
@@ -226,4 +299,5 @@ for (int thisNote = 0; thisNote < 4; thisNote++) {
   }
   
   }
+
 
