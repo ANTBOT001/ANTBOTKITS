@@ -2,7 +2,6 @@
  * ABTKITS.cpp
  * Author: ANTBOT
  * Created: 2016-05-21
- * Modified: 2016-10-20
  */
 #include <Arduino.h> 
 #include <string.h>
