@@ -65,9 +65,9 @@ float GetPM25Data()//读取PM2.5传感器,波特率：2400； 校验位：无；
   int pm25;
   eFlag=0;
   cnt=0;
-  while(mySerial.available()>0)
+  while(softSerial.available()>0)
   {
-    gdata = mySerial.read();//保存接收字符 
+    gdata = softSerial.read();//保存接收字符 
     if(gdata==0xAA&&eFlag==0)
      {
         eFlag=1;        
