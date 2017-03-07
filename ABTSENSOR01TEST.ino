@@ -39,43 +39,15 @@ void loop() {
   // put your main code here, to run repeatedly:
   
   
-  int pmData = GetPM25Data();
-  delay(1000);
+  float pmData = GetPM25Data();
+  delay(100);
   if(pmData>0)
   {
-    if((pmData-oldPm)<200)//防止误读数数据
-    {
-      oldPm = pmData;
-      sprintf(sendcmd,"ABTSR02,%d#",pmData);//PM2.5
-      abtKits.ABTSendCMD(sendcmd);delay(100);
-      }
-    //if(pmData>50)
-    //WarnSound(spkType);//PM2.5报警设置
-    
-    
-    }
-    if(digitalRead(K1_PIN)==0)
-    {
-      spkType = 1;
-      WarnSound(spkType);//设置报警音
-      }
-      if(digitalRead(K2_PIN)==0)
-    {
-      spkType = 2;
-      WarnSound(spkType);//设置报警音
-      }
-      if(digitalRead(K3_PIN)==0)
-    {
-      spkType = 3;
-      WarnSound(spkType);//设置报警音
-      }
-      if(digitalRead(K4_PIN)==0)
-    {
-      spkType = 4;
-      WarnSound(spkType);//设置报警音
-      }
-      int chk = DHT11.read(DHT11PIN);
-      delay(1000);
+     sprintf(sendcmd,"ABTSR02,%d#",(int)pmData);//PM2.5
+     abtKits.ABTSendCMD(sendcmd);delay(100);
+     }
+  int chk = DHT11.read(DHT11PIN);
+  delay(200);
   if(chk==DHTLIB_OK)
   {
     sprintf(sendcmd,"ABTSR00,%d#",DHT11.temperature);//温度
@@ -86,50 +58,46 @@ void loop() {
     
 }
 
-int GetPM25Data()//读取PM2.5传感器
+float GetPM25Data()//读取PM2.5传感器,波特率：2400； 校验位：无； 停止位：1 位； 数据位：8；数据包长度为7字节
 {
-  int cnt=0;
-  int data=0;
-  int revbuf[7];
-  int dsize=0;
-  unsigned char headFlag = 0;
-  while (softSerial.available()>0){
-   data = softSerial.read();   
-   
-   dsize++;
-   if(dsize>200)//超时退出
-   {   
-    return -1;
-    }
-    if(headFlag)
-    {
-      revbuf[cnt++]=data;         
-      }
-    if(data==0xAA&&headFlag==0)//找到帧头
-    {
-       revbuf[0] = 0xAA;
-       headFlag=1;
-       cnt = 1;
-      }     
-   if(cnt>6||revbuf[cnt]==0xff)//帧计数
-   {      
-    break;
-       }  
-   delay(5);
-  }
-  
-  //int sum=revbuf[1]+ revbuf[2]+ revbuf[3] + revbuf[4];
-  //if(revbuf[5]==sum )//校验字
+  int cnt,pmval,readcmd[7];
+  unsigned char gdata,eFlag,rbytes=0;
+  int pm25;
+  eFlag=0;
+  cnt=0;
+  while(mySerial.available()>0)
   {
-    float vo=((revbuf[1]<<8)+revbuf[2])/1024.0*5.00;//计算PM2.5值
-    //softSerial.flush();
-    revbuf[0]=0;    
-    return vo*800;   //返回读数
-    
+    gdata = mySerial.read();//保存接收字符 
+    if(gdata==0xAA&&eFlag==0)
+     {
+        eFlag=1;        
     }
-    
-    return -1;//校验字或结束字错误
-  }
+    if(eFlag==1)
+    {
+        readcmd[rbytes++]=gdata;
+    }    
+    delay(2);
+    cnt++;
+    if(cnt>400)
+    return 0;
+    if(rbytes==7)//完整帧
+    {
+      break;
+      }   
+    }
+    if(rbytes==0)
+     return 0;
+    //if(readcmd[6]!=0xFF)
+    // return 0;
+  pmval = readcmd[1];
+  pmval<<=8;
+  pmval+=readcmd[2];
+  pm25 = pmval*5.0/1024.0;//计算PM2.5值
+  pm25*=800.0;
+  if(pm25>999)
+  pm25=0;
+  return pm25;
+}
 void WarnSound(int Type)
 {
   return;
