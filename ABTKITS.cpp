@@ -2,16 +2,16 @@
  * ABTKITS.cpp
  * Author: ANTBOT
  * Created: 2016-05-21
+ * Modified：2017-04-08
  */
 #include <Arduino.h> 
 #include <string.h>
-#include "SoftwareSerial.h"
 #include "ABTKITS.h"
 
 
 
 //#define ABT_32U4
-//SoftwareSerial softSerial(8, 10);//RXD,TXD 软串口
+//#define ABT_WIFI
 
 ABTKITS::ABTKITS(){
 }
@@ -26,11 +26,7 @@ void ABTKITS::ABTINIT()
 	Serial.println("okey,ready");
 #else//328P
 	Serial.begin(57600);	//用于和蓝牙模块通讯
-//	softSerial.begin(57600);	//用于和PC串口通讯	
-	//Serial.begin(9600);	//用于和蓝牙模块通讯
-	//softSerial.begin(9600);	//用于和PC串口通讯	
 	delay(200);
-//	softSerial.println("okey,ready");
 #endif
 
   sprintf( HEADFRAME,"ABT");
@@ -38,27 +34,60 @@ void ABTKITS::ABTINIT()
   frameCnt=0;
   rbytes = 0;
   speedL= speedR=80; 
+  senCnt = 0;
 }
 int ABTKITS::ABTGetBleCmd()
 {
-	//	int i=0;
+	unsigned char aFlag=0;
+	char rch;
 #ifdef ABT_32U4
 	while(Serial1.available()>0)
   {
-    readcmd[rbytes++] = (char)(Serial1.read());//保存接收字符 
+  	rch = Serial1.read();
+  	if(rch=='A'&&aFlag==0)//收到字符'A'开始认为是有效数据
+  	{
+  			aFlag=1;
+  	}
+  	if(aFlag)
+    {
+        readcmd[rbytes++]=rch;        
+    }
+        if(rbytes==4)//接到3个字节后判断帧头
+        {
+          if(readcmd[1]!='B'||readcmd[2]!='T')
+          {
+            aFlag=0;rbytes=0;//清除标志
+          }          
+        }  
+    
     delay(1);
-    if(rbytes==64)
+    if(rbytes==64)//最多读64个字节
     break;
   }
 #else//328P
 	while(Serial.available()>0)
   {
-    readcmd[rbytes++] = (char)(Serial.read());//保存接收字符 
+  	rch = Serial.read();
+    if(rch=='A'&&aFlag==0)//收到字符'A'开始认为是有效数据
+  	{
+  			aFlag=1;
+  	}
+  	if(aFlag)
+    {
+        readcmd[rbytes++]=rch;        
+    }
+        if(rbytes==4)//接到3个字节后判断帧头
+        {
+          if(readcmd[1]!='B'||readcmd[2]!='T')
+          {
+            aFlag=0;rbytes=0;//清除标志
+          }          
+        }  
     delay(1);
-    if(rbytes==64)
-    break;
+    if(rbytes==64)//最多读64个字节
+    break; 
   }
-#endif
+#endif	
 	return rbytes;
 }
 void ABTKITS::ABTSendCMD(char *p)
@@ -69,29 +98,21 @@ void ABTKITS::ABTSendCMD(char *p)
 	Serial.println(p);	//用于和蓝牙模块通讯
 #endif
 }
-void ABTKITS::ABTSprint(char *p)
-{
-#ifdef ABT_32U4
-	Serial.println(p);//32u4调试	
-#else//328P
-//	softSerial.println(p);	//328p调试
-#endif
-}
+
 void ABTKITS::ABTHandleBleCmd()
 {
 	int i,j;
   i=0;
   char cmdbuff[64];
   j=0;
+  senCnt = 0;//计数清0
   for(i=0;i<64;i++)
   {
     if(readcmd[i]!=' ')//忽略空格
     cmdbuff[j++]=readcmd[i];
     if(readcmd[i]=='#')//帧结束标志
     {
-      frameCnt++;
-      //Serial.println(cmdbuff);
-      //if(frameCnt>6)//忽略前面几条命令
+      frameCnt++;      
       ABTExpCmd(cmdbuff);
       j=0;
       }    
@@ -135,6 +156,9 @@ void ABTKITS::ABTExpCmd(char *p)
   
   if(ctype=='A')//模拟量读写(PWM)
   {   
+#ifdef ABT_WIFI
+return;
+#endif
        if(param[0]<2)//不控制0和1管脚
   			return;  
         if(cRW=='W')
@@ -152,6 +176,9 @@ void ABTKITS::ABTExpCmd(char *p)
         
         }else if(ctype=='D') //数字量读写
         {
+#ifdef ABT_WIFI
+return;
+#endif
         	if(param[0]<2)//不控制0和1管脚
   				return;  
             if(cRW=='W')
@@ -173,42 +200,19 @@ void ABTKITS::ABTExpCmd(char *p)
             ABTSensorFunc(cRW,param[0],param[1]);
             }
 #ifdef ABT_32U4
-        Serial.println(cmd);delay(10);
-#else
-				//softSerial.println(cmd);delay(10);//如果控制小车使用了10号管脚，就不要再使用该语句
+        Serial.println(cmd);delay(10);//打印命令
 #endif
 }
-void ABTKITS::ABTSimple()//串口透传测试，需连接电脑并打开串口监视器或串口助手
-{
-#ifdef ABT_32U4
-    while(Serial1.available()) {    
-        delay(1);Serial.write(Serial1.read());
-    }
-    while(Serial.available()) {
-        delay(1);Serial1.write(Serial.read());
-    }
-#else
-//		while(Serial.available()) {    
-//        delay(1);softSerial.write(Serial.read());
-//    }
-//    while(softSerial.available()) {
-//        delay(1);Serial.write(softSerial.read());
-//    }
-#endif
-}
-void ABTKITS::ABTPrint()
-{
-#ifdef ABT_32U4	
-	Serial.println("Hello ABT!");
-#else
-//  softSerial.println("Hello ABT!");
-#endif	
-	}
- 
 
 void ABTKITS::ABTSensorFunc(char cRW,int sID,int sVal)//传感器模块处理函数
 {
 	curInfo.cRW = cRW;
 	curInfo.sID = sID;
 	curInfo.sVal= sVal;
+	if(senCnt==8)
+		senCnt=0;
+	senInfo[senCnt].cRW = cRW;
+	senInfo[senCnt].sID = sID;
+	senInfo[senCnt++].sVal = sVal;
+	
 }
