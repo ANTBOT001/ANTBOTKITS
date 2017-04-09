@@ -2,7 +2,8 @@
  * ABTKITS.h
  * Author: ANTBOT
  * Created: 2016-05-21
- */
+ * Modified：2017-04-08
+ */ 
  
 #ifndef ABTKITS_H
 #define ABTKITS_H
@@ -28,7 +29,9 @@ public:
 		char sendcmd[32];//发送缓存
 		int  speedL;
 		int  speedR;
-		infoFrmBle curInfo;
+		infoFrmBle curInfo;		
+		infoFrmBle senInfo[8];//传感器指令缓存
+		unsigned char senCnt;	
 	private:
 		void ABTExpCmd(char * p);//解析单条帧命令
 		void ABTSprint(char *p);//调试接口
