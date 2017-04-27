@@ -175,6 +175,7 @@ void displayData(float val)
   int cnt,pmval,readcmd[32];
   unsigned char gdata,eFlag,rbytes=0;
   cnt=0;
+   eFlag =0;
   while(mySerial.available()>0)
   {
     gdata = mySerial.read();//保存接收字符 
@@ -220,6 +221,7 @@ float GetPM25Data_sharp()//读取PM2.5传感器,波特率：2400； 校验位：
   unsigned char gdata,eFlag,rbytes=0;
   float pm25;
   cnt=0;
+   eFlag =0;
   while(mySerial.available()>0)
   {
     gdata = mySerial.read();//保存接收字符 
@@ -258,6 +260,7 @@ int GetPM25Data_CH2O()//读取甲醛传感器,波特率：9600； 校验位：�
   int cnt,pmval,readcmd[32];
   unsigned char gdata,eFlag,rbytes=0;
   cnt=0;
+   eFlag =0;
   while(mySerial.available()>0)
   {
     gdata = mySerial.read();//保存接收字符 
