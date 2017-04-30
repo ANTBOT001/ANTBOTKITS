@@ -45,6 +45,13 @@ ABTSR98,0#         应答：ABTSR98,data#
 ABTSR99,0#         应答：ABTSR99,data#
 6 甲醛/空气质量 单位:PPM
 ABTSR04,0#         应答：ABTSR04,data#
+7 设置闹钟小时
+ABTSW07,xx#     
+8 设置闹钟分钟
+ABTSW08,xx#    
+9 设置定时时间（分钟）
+ABTSW09,xx#    
+
 串口MP3模块：
 播放：ABTSW03,0#
 停止：ABTSW03,1#
