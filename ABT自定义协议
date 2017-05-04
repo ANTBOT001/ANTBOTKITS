@@ -50,7 +50,9 @@ ABTSW07,xx#
 8 设置闹钟分钟
 ABTSW08,xx#    
 9 设置定时时间（分钟）
-ABTSW09,xx#    
+ABTSW09,xx#  
+10 设置定时时间（秒）
+ABTSW10,xx#    
 
 串口MP3模块：
 播放：ABTSW03,0#
