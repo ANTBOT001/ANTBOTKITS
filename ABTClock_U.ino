@@ -275,11 +275,11 @@ void loop () {
       ur_normalCnt++;
       if(ur_pos<UR_CLOSECM)
       {
-        WarnSound();//报警
+        AlertSound();//报警
         }
        if(ur_normalCnt>UR_SEATTIME)
        {
-        WarnSound();//报警
+        AlertSound();//报警
         }
       }else{
         if(old_pos>UR_BEYONDCM)
@@ -315,6 +315,38 @@ int GetUtrlCm()//读取超声波测距读数，单位：厘米
         delay(100);
         return val;
 }
+void AlertSound()
+{
+  int tonePin = 7;  
+  int melody[] = {
+NOTE_D3,//
+NOTE_D1,//
+NOTE_D3,//
+NOTE_D1,//
+0,
+};
+
+int noteDurations[] = {
+  4,8,4,8,
+  4,  
+};
+for (int thisNote = 0; thisNote < 4; thisNote++) {
+
+    // to calculate the note duration, take one second 
+    // divided by the note type.
+    //e.g. quarter note = 1000 / 4, eighth note = 1000/8, etc.
+    int noteDuration = 1000/noteDurations[thisNote];
+    tone(tonePin, melody[thisNote],noteDuration);
+
+    // to distinguish the notes, set a minimum time between them.
+    // the note's duration + 30% seems to work well:
+    int pauseBetweenNotes = noteDuration * 1.20;
+    delay(pauseBetweenNotes);
+    // stop the tone playing:
+    noTone(tonePin);
+  }
+  
+  }
 void WarnSound()
 {
   int tonePin = 7;  
