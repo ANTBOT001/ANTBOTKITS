@@ -18,6 +18,8 @@ dht11 DHT11;      //声明对象实例
 #define NOTE_D2  330 //音符2
 #define NOTE_D3  350 //音符3
 
+#define OFFSETT 720//偏移量，以秒为单位，用来补偿程序和实际时间的差量
+
 ABTKITS abtKits;//ABT实例
 RTC_DS1307 RTC;
 SoftwareSerial mySerial(8,10);//设置软串口，8为RX，10为TX
@@ -66,7 +68,7 @@ void setup () {
   if (! RTC.isrunning()) {
     Serial.println("RTC is NOT running!");
     // following line sets the RTC to the date & time this sketch was compiled
-    //RTC.adjust(DateTime(__DATE__, __TIME__));
+    //RTC.adjust(DateTime(__DATE__, __TIME__));//调试时打开
   }
   
   //选中COM3用于控制液晶屏
@@ -115,7 +117,7 @@ void loop () {
             {
               clk_m = abtKits.senInfo[i].sVal;
               clkchange = 1;
-              WriteCfg(0,clk_m);
+              WriteCfg(1,clk_m);
               }
             
             }else if(abtKits.senInfo[i].sID==9)//定时分钟
@@ -137,7 +139,7 @@ void loop () {
   ////////////////////////////////////////// 
    DateTime nowto = RTC.now();
    // DateTime nowt = RTC.now();
-   DateTime nowt (nowto.unixtime() +120);
+   DateTime nowt (nowto.unixtime() +OFFSETT);
    newHour  = nowt.hour();
    newMin   = nowt.minute();
    newSec   = nowt.second();
@@ -146,7 +148,7 @@ void loop () {
   {
     tmr_m = 0;
     tmr_s = 0;
-    DateTime dstTime(nowto.unixtime() +120+tmrcnt);
+    DateTime dstTime(nowto.unixtime() +OFFSETT+tmrcnt);
     tmr_hc = dstTime.hour();
     tmr_mc = dstTime.minute();
     tmr_sc = dstTime.second();
@@ -199,9 +201,9 @@ void loop () {
    
     if(newHour!=oldHour)//设置太阳或月亮图标
     {
-      WarnSound();
+      //WarnSound();
       oldHour = newHour;
-      if(newHour>7&&newHour<19)//白天
+      if(newHour>6&&newHour<19)//白天
       {
         dayFlag =1;
         picBak = PIC_DAY;
