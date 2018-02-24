@@ -13,6 +13,7 @@ ANTBOT 蓝牙版DIY套件基于Arduino和蓝牙模块，配合手机APP（支持
 http://ANTBOT.icoc.in
 请提出您宝贵的意见，我们一定努力改进。
 
+![](http://9467683.s21i-9.faiusr.com/2/ABUIABACGAAgyoHW0gUo7aaX5AQwgAQ46AI!400x400.jpg)
 ![](http://9467683.s21i-9.faiusr.com/2/ABUIABACGAAgwYyJ0AUogIrQpgcw-wQ4gAQ!400x400.jpg)
 ![](http://9467683.s21i-9.faiusr.com/2/ABUIABACGAAg3PG01AUozJ_5uQcwgAQ48QI.jpg)
 ![](http://9467683.s21i-9.faiusr.com/2/ABUIABACGAAgnt2S0QUoiKCR0wcw4AM4xgI.jpg)
