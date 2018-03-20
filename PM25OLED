@@ -1,0 +1,87 @@
+#include <SoftwareSerial.h>
+#include "U8glib.h"
+U8GLIB_SSD1306_128X64 u8g(U8G_I2C_OPT_NONE); 
+SoftwareSerial mySerial(7,10);
+const   uint8_t bitmap_s []   U8G_PROGMEM  ={0x00,0x00,0x00,0x00,0xFD,0xFC,0x04,0x84,0x44,0x84,0x44,0x84,0x28,0x88,0x28,0x88,
+0x10,0x50,0x10,0x50,0x28,0x20,0x28,0x20,0x44,0x50,0x44,0x88,0x81,0x04,0x02,0x02};/*"双",0*/
+
+const   uint8_t bitmap_y []   U8G_PROGMEM  ={0x00,0x00,0x27,0xFE,0x14,0x20,0x14,0x40,0x85,0xFC,0x45,0x04,0x45,0xFC,0x15,0x04,
+0x15,0xFC,0x25,0x24,0xE4,0x20,0x24,0xA8,0x29,0x24,0x2A,0x22,0x30,0xA0,0x00,0x40};/*"源",1*/
+
+const   uint8_t bitmap_d []   U8G_PROGMEM  ={0x01,0x00,0x01,0x00,0x01,0x00,0x3F,0xF8,0x21,0x08,0x21,0x08,0x21,0x08,0x3F,0xF8,
+0x21,0x08,0x21,0x08,0x21,0x08,0x3F,0xF8,0x21,0x0A,0x01,0x02,0x01,0x02,0x00,0xFE};/*"电",2*/
+
+const   uint8_t bitmap_z[]    U8G_PROGMEM  ={0x00,0x00,0x7F,0xF8,0x00,0x10,0x00,0x20,0x00,0x40,0x01,0x80,0x01,0x00,0xFF,0xFE,
+0x01,0x00,0x01,0x00,0x01,0x00,0x01,0x00,0x01,0x00,0x01,0x00,0x05,0x00,0x02,0x00};/*"子",3*/
+void draw(void) {
+  u8g.setFont(u8g_font_unifont);
+  // graphic commands to redraw the complete screen should be placed here  
+ u8g.drawBitmapP ( 32 , 0 , 2 , 16 , bitmap_s); 
+ u8g.drawBitmapP ( 49 , 0 , 2 , 16 , bitmap_y );
+ u8g.drawBitmapP ( 66 , 0 , 2 , 16 , bitmap_d); 
+ u8g.drawBitmapP ( 83 , 0 , 2 , 16 , bitmap_z );
+}
+void setup() {
+  // put your setup code here, to run once:
+  Serial.begin(9600);
+  mySerial.begin(2400);
+  delay(200);
+}
+
+void loop() {
+  // put your main code here, to run repeatedly:
+  char str1[32];
+  float val_pm25 = GetPM25Data_sharp();//夏普PM2.5传感器
+  Serial.println(val_pm25);
+  if(val_pm25>1.0)
+  {
+    sprintf(str1,"PM2.5: %d     ",(int)val_pm25);   
+   u8g.firstPage();  
+  do {       
+      draw();      
+      u8g.drawStr(0, 40,str1);      
+  } while( u8g.nextPage() );
+   }
+  delay(500);
+
+}
+float GetPM25Data_sharp()//读取PM2.5传感器,波特率：2400； 校验位：无； 停止位：1 位； 数据位：8；数据包长度为7字节
+{
+  int cnt,pmval,readcmd[7];
+  unsigned char gdata,eFlag,rbytes=0;
+  float pm25;
+  cnt=0;
+   eFlag =0;
+  while(mySerial.available()>0)
+  {
+    gdata = mySerial.read();//保存接收字符 
+    if(gdata==0xAA&&eFlag==0)
+     {
+        eFlag=1;        
+    }
+    if(eFlag==1)
+    {
+        readcmd[rbytes++]=gdata;
+    }    
+    delay(2);
+    cnt++;
+    if(cnt>100)
+    return 0;
+    if(rbytes==7)//完整帧
+    {
+      break;
+      }   
+    }
+    if(rbytes==0)
+     return 0;
+    //if(readcmd[6]!=0xFF)
+    // return 0;
+  pmval = readcmd[1];
+  pmval<<=8;
+  pmval+=readcmd[2];
+  pm25 = pmval*5.0/1024.0;//计算PM2.5值
+  pm25*=800.0;
+  if(pm25>999)
+  pm25=0;
+  return pm25;
+}
