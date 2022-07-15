@@ -13,18 +13,15 @@ char get_ssid[40] = {0}; //从EEPROM中读取得到的SSIDchar类型数组
 char get_psk[50] = {0}; //从EEPROM中读取得到的WIFI密码
 const unsigned long HTTP_TIMEOUT = 5000;               // max respone time from server
 const size_t MAX_CONTENT_SIZE = 2048;                   // max size of the HTTP response
-const char ssid[] = "RongcoreA";     //修改为自己的路由器用户名
-const char password[] = "12345678"; //修改为自己的路由器密码 
-const char* host = "api.seniverse.com";
-const char* APIKEY = "nqbgbdluxnvvrone";        //心知天气网站提供的API KEY
-const char* city = "beijing";
-const char* language = "en";//zh-Hans 简体中文  会显示乱码
+const char ssid[] = "xxxxxxxx";     //修改为自己的路由器用户名
+const char password[] = "xxxxxxxx"; //修改为自己的路由器密码 
+
 unsigned int cntFlag=0; 
 unsigned char tcnt=0; 
 char response[MAX_CONTENT_SIZE];
 char responseLife[MAX_CONTENT_SIZE];
 char endOfHeaders[] = "\r\n\r\n"; 
-String weekday[8] = {"Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday",""};
+
 String SSID_S;
 String psk_s;
 #define addr 200   //这个地址可以随意设置，如果用本程序则不能设置为小于50以下的值（为读取密码字符串预留空间）
