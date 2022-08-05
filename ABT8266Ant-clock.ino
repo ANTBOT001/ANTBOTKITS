@@ -14,6 +14,25 @@
 #include <ESPDash.h>
 #include <Adafruit_NeoPixel.h>
 
+#define NTD1 294
+#define NTD2 330
+#define NTD3 350
+int tune1[]=
+{
+  NTD1,NTD2,NTD3
+};
+int tune2[]=
+{
+  NTD3,NTD2,NTD1
+};
+float durt[]=
+{
+  0.5,0.5,0.5
+};
+int songLength=3;
+int tonepin=15;
+
+
 #define PIN        0  //GPIO0接口
 
 #define NUMPIXELS  2  //彩灯个数
@@ -29,7 +48,7 @@ const size_t MAX_CONTENT_SIZE = 2048;                   // max size of the HTTP 
 const char ssid[] = "xxxxxxxx";     //修改为自己的路由器用户名
 const char password[] = "xxxxxxxx"; //修改为自己的路由器密码 
 const char* host = "api.seniverse.com";
-const char* APIKEY = "xxxxxxxxxxxxxx";        //心知天气网站提供的API KEY
+const char* APIKEY = "xxxxxxxxxxxxxxxx";        //心知天气网站提供的API KEY
 const char* city = "beijing";
 const char* language = "en";//zh-Hans 简体中文  会显示乱码
 unsigned int cntFlag=0; 
@@ -87,6 +106,31 @@ union data  //定义一个联合体数据类型
  
 data col[40];  //两个缓存联合体用来分别用来读取 WIFI密码和名称
 data col_2[50];
+int bellFlag=0;
+
+void Bell(int tt)
+{
+  int x;
+  if(tt)
+  {
+    for(x=0;x<songLength;x++)
+  {
+    tone(tonepin,tune1[x]);    
+    delay(400*durt[x]);    
+    delay(100*durt[x]);
+    noTone(tonepin);
+  }
+    }else{
+      for(x=0;x<songLength;x++)
+  {
+    tone(tonepin,tune2[x]);    
+    delay(400*durt[x]);    
+    delay(100*durt[x]);
+    noTone(tonepin);
+  }
+      }
+  
+}
 
 //两个用来分别转换字符串的数组
 void change(String name1) {
@@ -454,6 +498,8 @@ void sendtoArduino(const struct UserData* userData) {
   int minu =  timeClient.getMinutes();  //获取分钟
   int sece =  timeClient.getSeconds();  //获取秒
   Serial.printf("hour:%d minu:%d sece:%d\n", hours,minu,sece);
+  display.setFont(ArialMT_Plain_10);
+  display.drawString(56, 54, WiFi.localIP().toString().c_str());
   display.display();
   //sprintf(s2Uno,"[%s][%s][%s]",userData->city,userData->weather,userData->temp);
   //Serial.println(s2Uno);
@@ -479,7 +525,7 @@ void setup() {
 //  pinMode(LED_Pin, OUTPUT);
  
   pinMode(LED_Pin, OUTPUT);
-  
+  pinMode(tonepin,OUTPUT);
   pinMode(BTN_Pin, INPUT);
   delay(100);
   Serial.begin(115200);
@@ -606,6 +652,8 @@ void setup() {
     /* Make sure we update our button's value and send update to dashboard */
     //ledOn = 0;
     digitalWrite(LED_Pin, value);
+    //Bell(value);
+    bellFlag = value+1;
     button1.update(value);
     dashboard.sendUpdates();
   });
@@ -652,6 +700,11 @@ void loop() {
   led.setPixelColor(0,led.Color(lightR, lightG, lightB)); //
   led.setPixelColor(1,led.Color(lightR, lightG, lightB)); //
   led.show(); //刷新显示
+  if(bellFlag)
+  {
+    Bell(bellFlag-1);
+    bellFlag=0;
+    }
   /////////////////////////////////////
   if(tcnt==20)
   {
@@ -670,7 +723,7 @@ void loop() {
         connectNewWifi();
     }
   ///////////////////////////////////
- 
+  
   if(digitalRead(BTN_Pin)==0)//设置按钮按下
   {
     i=0;
